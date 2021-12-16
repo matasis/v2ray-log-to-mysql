@@ -9,7 +9,8 @@ import os
 def pd2mysql(df: DataFrame, table: str):
     try:
         engine = create_engine(
-            'mysql+pymysql://root:997470@localhost/vnetlog?charset=utf8')
+            "mysql+pymysql://root:997470@localhost/vnetlog?charset=utf8"
+        )
         df.to_sql(table, engine, if_exists="append", index=False)
         engine.dispose()
     except:

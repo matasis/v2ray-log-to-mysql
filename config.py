@@ -1,8 +1,10 @@
 import configparser
+import os
 
-CONFIGFILE="/usr/local/etc/pyssr/config.ini"
+CONFIGFILE = os.getcwd() + "\\config.ini"
+
 
 def initConfig():
-    config=configparser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(CONFIGFILE)
     print(config.sections())
