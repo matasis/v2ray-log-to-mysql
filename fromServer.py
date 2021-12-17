@@ -1,18 +1,25 @@
+import logging
 import paramiko
 import datetime
 
 from config import config
 
-server_host = config.getValue("server", "Host")
-server_port = config.getValue("server", "Port")
-server_username = config.getValue("server", "Username")
-server_passwd = config.getValue("server", "Password")
+# server for sftp and ssh
+SERVER_HOST = config.getValue("server", "Host")
+SERVER_PORT = config.getValue("server", "Port")
+SERVER_USERNAME = config.getValue("server", "Username")
+SERVER_PASSWD = config.getValue("server", "Password")
+
+# v2ray log
+LOG_DIR = config.getValue("v2ray_log", "Logdir")
+LOG_BACKUP_DIR = config.getValue("v2ray_log", "Backup_dir")
+LOG_FILENAME = config.getValue("v2ray_log", "Log_filename")
 
 
 def sftpConn():
-    transport = paramiko.Transport((server_host, server_port))
+    transport = paramiko.Transport((SERVER_HOST, SERVER_PORT))
     transport.connect(
-        username=server_username, password=server_passwd
+        username=SERVER_USERNAME, password=SERVER_PASSWD
     )  # connect to server
     return transport
 
@@ -21,36 +28,41 @@ def sshConn():
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(
-        hostname=server_host,
-        port=server_port,
-        username=server_username,
-        password=server_passwd,
+        hostname=SERVER_HOST,
+        port=SERVER_PORT,
+        username=SERVER_USERNAME,
+        password=SERVER_PASSWD,
     )
     return ssh
 
 
-def downloadLog(logdir: str = "/var/log/v2ray/", filename: str = "access.log"):  # /root/logbackup/
+def downloadLog(logdir: str = LOG_DIR, filename: str = LOG_FILENAME):  # /root/logbackup/
     if logdir[-1] != "/":
-        return False, "log dir mast end with '/'"
+        logdir += "/"
     try:
         transport = sftpConn()  # create sftp connect
     except:
-        return False, "Access error"
+        logging.error("sftp connect error!")
+        return False
     try:
         sftp = paramiko.SFTPClient.from_transport(transport)
         sftp.get(logdir + filename, filename)  # download log file
     except:
-        return False, "Download error"
+        logging.error("can not download target file!")
+        return False
     transport.close()
-    return True, "Success"
+    return True
 
 
 def cheakLog():
     try:
         ssh = sshConn()
-        stdin, stdout, stderr = ssh.exec_command("cd /root/logbackup;ls")
+        stdin, stdout, stderr = ssh.exec_command(
+            "cd {backupdir};ls".format(backupdir=LOG_BACKUP_DIR)
+        )
     except:
-        raise UserWarning("Connect error")
+        logging.error("ssh connect error")
+        raise
     result = str(stdout.read(), encoding="utf-8")
     ssh.close()
     if str(datetime.date.today()) in result:
@@ -59,16 +71,18 @@ def cheakLog():
         return True
 
 
-def clearLog():  # 清除服务器日志文件
+def clearLog():  # clean server log file
     try:
         ssh = sshConn()
         ssh.exec_command(
-            "cp /var/log/v2ray/access.log /root/logbackup/acc-"
-            + str(datetime.date.today())  # 备份
+            "cp {logdir}/{logfilename} {backupdir}/acc-".format(logdir=LOG_DIR, logfilename=LOG_FILENAME, backupdir=LOG_BACKUP_DIR)
+            + str(datetime.date.today()) 
             + "-"
             + str(datetime.datetime.time(datetime.datetime.today()))[:8]
-            + '.log;echo "" > /var/log/v2ray/access.log'
+            + ".log;echo \"\" > /var/log/v2ray/access.log"
         )
         ssh.close()
     except:
-        return False, "Connect error"
+        logging.error("ssh connect error!")
+        return False
+    return True
