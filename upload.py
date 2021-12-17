@@ -1,6 +1,6 @@
 import pandas as pd
 import re
-
+import logging
 
 def getLogList():  # read log file
     logfile = open("access.log", "r")
@@ -59,7 +59,8 @@ def process():  # process log data
     try:
         accept_log, reject_log = getLogList()
     except:
-        return False, "can not load log file"
+        logging.error("can not load log file")
+        return False
     accept_columns = [
         "rdate",
         "rtime",
@@ -99,5 +100,6 @@ def process():  # process log data
         reject_log_dataframe = reject_log_dataframe.drop_duplicates()
         reject_log_dataframe.to_csv("reject.csv", index=False)
     except:
-        return False, "data error"
-    return True, "Success"
+        logging.error("data error")
+        return False
+    return True
