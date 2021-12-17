@@ -2,7 +2,7 @@ import pandas as pd
 import re
 
 
-def getLogList():  # 从log文件中读取内容
+def getLogList():  # read log file
     logfile = open("access.log", "r")
     logtext = logfile.readlines()
     accept_log = []
@@ -20,7 +20,7 @@ def getLogList():  # 从log文件中读取内容
     return accept_log, reject_log
 
 
-def standAcceptItem(item: list) -> list:  # 处理分割协议、地址、端口
+def standAcceptItem(item: list) -> list:  # splite port and ip 
     def spl(ip_record: str) -> list:
         pre = ip_record.split(":")
         pre_len = len(pre)
@@ -43,7 +43,7 @@ def standAcceptItem(item: list) -> list:  # 处理分割协议、地址、端口
     return record
 
 
-def standRejectItem(item: list) -> list:  # 处理拒绝的协议
+def standRejectItem(item: list) -> list:  # process rejected item
     while "" in item:
         item.remove("")
     from_info = item[2].split(":")
@@ -55,7 +55,7 @@ def standRejectItem(item: list) -> list:  # 处理拒绝的协议
     return record
 
 
-def produce():  # 处理数据
+def process():  # process log data
     try:
         accept_log, reject_log = getLogList()
     except:

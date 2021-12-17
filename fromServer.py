@@ -1,13 +1,19 @@
 import paramiko
 import datetime
 
-backupdir = "/var/log/v2ray/"
-todaylog = "acc-" + str(datetime.date.today()) + ".log"
+from config import config
+
+server_host = config.getValue("server", "Host")
+server_port = config.getValue("server", "Port")
+server_username = config.getValue("server", "Username")
+server_passwd = config.getValue("server", "Password")
 
 
 def sftpConn():
-    transport = paramiko.Transport(("104.128.88.164", 26359))  # 获取Transport实例
-    transport.connect(username="root", password="Yyk997470..")  # 建立连接
+    transport = paramiko.Transport((server_host, server_port))
+    transport.connect(
+        username=server_username, password=server_passwd
+    )  # connect to server
     return transport
 
 
@@ -15,23 +21,24 @@ def sshConn():
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(
-        hostname="104.128.88.164", port=26359, username="root", password="Yyk997470.."
+        hostname=server_host,
+        port=server_port,
+        username=server_username,
+        password=server_passwd,
     )
     return ssh
 
 
-def downloadLog(
-    logdir: str = "/var/log/v2ray/", filename: str = "access.log"
-):  # /root/logbackup/
+def downloadLog(logdir: str = "/var/log/v2ray/", filename: str = "access.log"):  # /root/logbackup/
     if logdir[-1] != "/":
         return False, "log dir mast end with '/'"
     try:
-        transport = sftpConn()  # 创建连接
+        transport = sftpConn()  # create sftp connect
     except:
         return False, "Access error"
     try:
         sftp = paramiko.SFTPClient.from_transport(transport)
-        sftp.get(logdir + filename, filename)  # 下载log文件
+        sftp.get(logdir + filename, filename)  # download log file
     except:
         return False, "Download error"
     transport.close()

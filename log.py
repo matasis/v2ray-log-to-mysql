@@ -4,14 +4,18 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 
 DEBUG_MODE = True
-ALL_LOG = os.getcwd() + "\\all.log"
-ERROR_LOG = os.getcwd() + "\\error.log"
+
+if "log" not in os.listdir():   # cheak the log folder is in the root directory if not create it
+    os.mkdir("log")
+
+ALL_LOG = os.getcwd() + "\\log\\all.log"
+ERROR_LOG = os.getcwd() + "\\log\\error.log"
 
 
-def createLog():
+def createLog(debug_mode: bool = False):
     logger = logging.getLogger()
 
-    if DEBUG_MODE:
+    if debug_mode:
         logger.setLevel(logging.DEBUG)
 
     rf_handler = TimedRotatingFileHandler(
@@ -36,4 +40,3 @@ def createLog():
     logger.addHandler(rf_handler)
     logger.addHandler(f_handler)
     return logger
-
