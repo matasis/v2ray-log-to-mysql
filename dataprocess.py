@@ -2,7 +2,8 @@ import pandas as pd
 import re
 import logging
 
-def getLogList():  # read log file
+
+def _getLogList():  # read log file
     logfile = open("access.log", "r")
     logtext = logfile.readlines()
     accept_log = []
@@ -16,12 +17,12 @@ def getLogList():  # read log file
         elif "rejected" in log:
             reject_log.append(log)
         else:
-            print(log)
+            logging.debug(log)
     return accept_log, reject_log
 
 
-def standAcceptItem(item: list) -> list:  # splite port and ip 
-    def spl(ip_record: str) -> list:
+def _standAcceptItem(item: list) -> list:  # splite port and ip
+    def _spl(ip_record: str) -> list:
         pre = ip_record.split(":")
         pre_len = len(pre)
         if pre_len == 2:
@@ -33,17 +34,18 @@ def standAcceptItem(item: list) -> list:  # splite port and ip
             rec = pre
         return rec
 
-    from_info = spl(item[2])
-    target_info = spl(item[4])
+    from_info = _spl(item[2])
+    target_info = _spl(item[4])
     try:
-        user = item[-1].split("@")[0]
+        # user = item[-1].split("@")[0]
+        user = item[-1]
         record = item[:2] + from_info + item[3:4] + target_info + [user]
     except:
         print(item, from_info, target_info)
     return record
 
 
-def standRejectItem(item: list) -> list:  # process rejected item
+def _standRejectItem(item: list) -> list:  # process rejected item
     while "" in item:
         item.remove("")
     from_info = item[2].split(":")
@@ -56,11 +58,15 @@ def standRejectItem(item: list) -> list:  # process rejected item
 
 
 def process():  # process log data
+    """
+    Processing and formatting data.
+    return two Dataframe first one is accepted next one is rejected.
+    """
     try:
-        accept_log, reject_log = getLogList()
-    except:
+        accept_log, reject_log = _getLogList()
+    except Exception as e:
         logging.error("can not load log file")
-        return False
+        return None
     accept_columns = [
         "rdate",
         "rtime",
@@ -86,20 +92,20 @@ def process():  # process log data
     rejected_record = []
     try:
         for accept in accept_log:
-            accepted_record.append(standAcceptItem(accept))
+            accepted_record.append(_standAcceptItem(accept))
         for reject in reject_log:
-            rejected_record.append(standRejectItem(reject))
+            rejected_record.append(_standRejectItem(reject))
         accept_log_dataframe = pd.DataFrame(
             accepted_record, index=None, columns=accept_columns
         )
         accept_log_dataframe = accept_log_dataframe.drop_duplicates()
-        accept_log_dataframe.to_csv("accept.csv", index=False)
+        # accept_log_dataframe.to_csv("accept.csv", index=False)
         reject_log_dataframe = pd.DataFrame(
             rejected_record, index=None, columns=reject_columns
         )
         reject_log_dataframe = reject_log_dataframe.drop_duplicates()
-        reject_log_dataframe.to_csv("reject.csv", index=False)
-    except:
-        logging.error("data error")
-        return False
-    return True
+        # reject_log_dataframe.to_csv("reject.csv", index=False)
+    except Exception as e:
+        logging.error(e)
+        return None
+    return accept_log_dataframe, reject_log_dataframe

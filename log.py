@@ -14,8 +14,11 @@ ERROR_LOG = os.getcwd() + "\\log\\error.log"
 
 def createLog(debug_mode: bool = False):
     logger = logging.getLogger()
-
+    logger.setLevel(logging.INFO)
+    st_handler=logging.StreamHandler()
+    st_handler.setLevel(logging.INFO)
     if debug_mode:
+        st_handler.setLevel(logging.debug)
         logger.setLevel(logging.DEBUG)
 
     rf_handler = TimedRotatingFileHandler(
@@ -36,7 +39,7 @@ def createLog(debug_mode: bool = False):
             "%(asctime)s - %(levelname)s - %(filename)s[:%(lineno)d] - %(message)s"
         )
     )
-
+    logger.addHandler(st_handler)
     logger.addHandler(rf_handler)
     logger.addHandler(f_handler)
     return logger

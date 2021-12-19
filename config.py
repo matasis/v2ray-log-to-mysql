@@ -45,4 +45,5 @@ class Config:
         else:
             raise
 
-config=Config()
+config = Config()
+
