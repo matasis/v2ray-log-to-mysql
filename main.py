@@ -4,8 +4,9 @@ from log import createLog
 from server import Server
 from dataprocess import process
 from mysql import df2mysql
+from config import config
 
-logger = createLog()  # init log mode
+logger = createLog(config.getBoolen("debug", "Debug_mode"))  # init log mode
 
 server = Server()
 
