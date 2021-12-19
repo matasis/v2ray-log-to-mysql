@@ -1,6 +1,6 @@
 import datetime
 import logging
-
+import os
 import paramiko
 
 from config import config
@@ -16,6 +16,7 @@ LOG_DIR = config.getValue("v2ray_log", "Log_dir")
 LOG_BACKUP_DIR = config.getValue("v2ray_log", "Backup_dir")
 LOG_FILENAME = config.getValue("v2ray_log", "Log_filename")
 
+
 class Server:
     def __sftpConn(self):
         transport = paramiko.Transport((SERVER_HOST, SERVER_PORT))
@@ -23,7 +24,6 @@ class Server:
             username=SERVER_USERNAME, password=SERVER_PASSWD
         )  # connect to server
         return transport
-
 
     def __sshConn(self):
         ssh = paramiko.SSHClient()
@@ -36,8 +36,7 @@ class Server:
         )
         return ssh
 
-
-    def downloadLog(self,logdir: str = LOG_DIR, filename: str = LOG_FILENAME):  # /root/logbackup/
+    def downloadLog(self, logdir: str = LOG_DIR, filename: str = LOG_FILENAME):  # /root/logbackup/
         """
         Download log from server
         """
@@ -56,7 +55,6 @@ class Server:
             return False
         transport.close()
         return True
-
 
     def cheakLog(self):
         """
@@ -77,22 +75,26 @@ class Server:
         else:
             return True
 
-
-    def clearLog(self,logdir:str=LOG_DIR, logfilename:str=LOG_FILENAME, backupdir:str=LOG_BACKUP_DIR):  # clean server log file
+    def clearLog(self, logdir: str = LOG_DIR, logfilename: str = LOG_FILENAME, backupdir: str = LOG_BACKUP_DIR,):  # clean server log file
         """
         Clean up the logs on the server,and backup the logs to the specified folder
         """
         try:
             ssh = self.__sshConn()
             ssh.exec_command(
-                "cp {logdir}/{logfilename} {backupdir}/acc-".format(logdir=logdir, logfilename=logfilename, backupdir=logfilename)
-                + str(datetime.date.today()) 
+                "cp {logdir}/{logfilename} {backupdir}/acc-".format(logdir=logdir, logfilename=logfilename, backupdir=backupdir)
+                + str(datetime.date.today())
                 + "-"
                 + str(datetime.datetime.time(datetime.datetime.today()))[:8]
-                + ".log;echo \"\" > {logdir}/{logfilename}".format(logdir=logdir, logfilename=logfilename)
+                + '.log;echo "" > {logdir}/{logfilename}'.format(logdir=logdir, logfilename=logfilename)
             )
             ssh.close()
         except:
             logging.error("ssh connect error!")
+            return False
+        try:
+            os.remove(LOG_FILENAME)
+        except:
+            logging.error("can not delete local logfile")
             return False
         return True

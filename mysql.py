@@ -1,5 +1,4 @@
 import logging
-
 from pandas.core.frame import DataFrame
 from sqlalchemy import create_engine
 
@@ -12,7 +11,11 @@ MYSQL_PASSWD = config.getValue("mysql", "Password")
 MYSQL_DATABASE = config.getValue("mysql", "Database")
 
 
-def pd2mysql(df: DataFrame, table: str):
+def df2mysql(df: DataFrame, table: str):
+    """
+    Please create a database before use.
+    Tables are automatically created in the database when first used.
+    """
     try:
         mysql_link = "mysql+pymysql://{user}:{passwd}@{host}:{port}/{database}".format(
             user=MYSQL_USERNAME,
@@ -21,11 +24,17 @@ def pd2mysql(df: DataFrame, table: str):
             port=MYSQL_PORT,
             database=MYSQL_DATABASE,
         )
-        engine = create_engine(mysql_link)
         logging.debug("create mysql engine with " + mysql_link)
+        engine = create_engine(mysql_link)
+    except Exception as e:
+        logging.error(e)
+        logging.error("mysql connect error")
+        raise
+    try:
         df.to_sql(table, engine, if_exists="append", index=False)
         logging.debug("insert dataframe to mysql")
         engine.dispose()
-    except:
-        logging.error("mysql connect error")
+    except Exception as e:
+        logging.error(e)
+        logging.error("can not insert into mysql.")
         raise

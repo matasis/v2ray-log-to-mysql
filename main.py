@@ -1,11 +1,9 @@
-import pandas as pd
 import logging
-import os
 
 from log import createLog
 from server import Server
 from dataprocess import process
-from mysql import pd2mysql
+from mysql import df2mysql
 
 logger = createLog()  # init log mode
 
@@ -20,23 +18,17 @@ if server.cheakLog():
     logging.info("download success!")
     logging.info("---------------------------------------")
     logging.info("try to process log file......")
-    if not process():
+    log_data = process()
+    if log_data is None:
         raise
     logging.info("process success!")
     logging.info("---------------------------------------")
     logging.info("try to upload to mysql......")
-    try:
-        accept = pd.read_csv("accept.csv")
-        reject = pd.read_csv("reject.csv")
-    except:
-        logging.error("open csv file failed!")
-        raise
-    pd2mysql(accept, "record")
-    pd2mysql(reject, "rejected")
+    accept = log_data[0]
+    reject = log_data[1]
+    df2mysql(accept, "accept")
+    df2mysql(reject, "reject")
     logging.info("clean file......")
-    os.remove("accept.csv")
-    os.remove("reject.csv")
-    os.remove("access.log")
     server.clearLog()
     logging.info("insert into mysql success")
 
