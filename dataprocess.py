@@ -109,3 +109,4 @@ def process():  # process log data
         logging.error(e)
         return None
     return accept_log_dataframe, reject_log_dataframe
+

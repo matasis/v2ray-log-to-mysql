@@ -43,3 +43,4 @@ def createLog(debug_mode: bool = False):
     logger.addHandler(rf_handler)
     logger.addHandler(f_handler)
     return logger
+

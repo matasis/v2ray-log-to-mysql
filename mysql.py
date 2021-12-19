@@ -38,3 +38,4 @@ def df2mysql(df: DataFrame, table: str):
         logging.error(e)
         logging.error("can not insert into mysql.")
         raise
+

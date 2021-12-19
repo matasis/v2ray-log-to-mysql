@@ -100,3 +100,4 @@ class Server:
             logging.error("can not delete local logfile")
             return False
         return True
+

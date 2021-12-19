@@ -46,4 +46,3 @@ class Config:
             raise
 
 config = Config()
-
