@@ -2,7 +2,7 @@ import pandas as pd
 import re
 import logging
 
-def getLogList():  # read log file
+def _getLogList():  # read log file
     logfile = open("access.log", "r")
     logtext = logfile.readlines()
     accept_log = []
@@ -20,7 +20,7 @@ def getLogList():  # read log file
     return accept_log, reject_log
 
 
-def standAcceptItem(item: list) -> list:  # splite port and ip 
+def _standAcceptItem(item: list) -> list:  # splite port and ip 
     def spl(ip_record: str) -> list:
         pre = ip_record.split(":")
         pre_len = len(pre)
@@ -43,7 +43,7 @@ def standAcceptItem(item: list) -> list:  # splite port and ip
     return record
 
 
-def standRejectItem(item: list) -> list:  # process rejected item
+def _standRejectItem(item: list) -> list:  # process rejected item
     while "" in item:
         item.remove("")
     from_info = item[2].split(":")
@@ -57,7 +57,7 @@ def standRejectItem(item: list) -> list:  # process rejected item
 
 def process():  # process log data
     try:
-        accept_log, reject_log = getLogList()
+        accept_log, reject_log = _getLogList()
     except:
         logging.error("can not load log file")
         return False
@@ -86,9 +86,9 @@ def process():  # process log data
     rejected_record = []
     try:
         for accept in accept_log:
-            accepted_record.append(standAcceptItem(accept))
+            accepted_record.append(_standAcceptItem(accept))
         for reject in reject_log:
-            rejected_record.append(standRejectItem(reject))
+            rejected_record.append(_standRejectItem(reject))
         accept_log_dataframe = pd.DataFrame(
             accepted_record, index=None, columns=accept_columns
         )
@@ -102,4 +102,4 @@ def process():  # process log data
     except:
         logging.error("data error")
         return False
-    return True
+    return accept_log_dataframe,reject_log_dataframe
