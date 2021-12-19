@@ -7,7 +7,7 @@ from config import config
 
 # server for sftp and ssh
 SERVER_HOST = config.getValue("server", "Host")
-SERVER_PORT = config.getValue("server", "Port")
+SERVER_PORT = config.getInt("server", "Port")
 SERVER_USERNAME = config.getValue("server", "Username")
 SERVER_PASSWD = config.getValue("server", "Password")
 
@@ -44,7 +44,8 @@ class Server:
             logdir += "/"
         try:
             transport = self.__sftpConn()  # create sftp connect
-        except:
+        except Exception as e:
+            logging.error(e)
             logging.error("sftp connect error!")
             return False
         try:
@@ -89,7 +90,8 @@ class Server:
                 + '.log;echo "" > {logdir}/{logfilename}'.format(logdir=logdir, logfilename=logfilename)
             )
             ssh.close()
-        except:
+        except Exception as e:
+            logging.error(e)
             logging.error("ssh connect error!")
             return False
         try:
